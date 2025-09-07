@@ -1,0 +1,71 @@
+a{
+    text-decoration: none;
+}
+.mail_form{
+    max-width: 600px;
+    width: 100%;
+    /* background-color: #eef2ff; */
+    background-color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+}
+.submit_btn {
+  background-color: #22c55e; /* Green accent */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.submit_btn:hover {
+  background-color: #16a34a; /* Slightly darker green on hover */
+}
+
+.submit_btn:disabled {
+  background-color: #a5d6a7; /* Light green when disabled */
+  cursor: not-allowed;
+}
+
+.form-control ,.form-select{
+    box-shadow: none !important;
+    border: 1px solid #969696;
+}
+.Create{
+    /* color: #4f46e5 !important; */
+    font-weight: 600;
+    font-size: 20px;
+}
+@media(max-width:992px){
+    .Add_Btn{
+        width: 100%;
+    }
+}
+.custom-radio-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.custom-radio {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  background-color: white;
+  color: #333;
+}
+
+.custom-radio input[type="radio"] {
+  display: none;
+}
+
+.custom-radio.selected {
+  background-color: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
