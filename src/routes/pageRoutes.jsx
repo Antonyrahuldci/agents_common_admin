@@ -1,6 +1,6 @@
 export const pageRoutes = {
   login: "/",
   dashboard: "/dashboard",
-  mail: "/send-mail",
+  mail: "/send-email",
   wailistusers: "/waitlist-users",
 };

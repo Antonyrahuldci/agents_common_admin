@@ -184,7 +184,7 @@ function App() {
               />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/settings" element={<Settings />} />
-              <Route path="/send-mail" element={<SendMail />} />
+              <Route path="/send-email" element={<SendMail />} />
 
               {/* Default redirect */}
               <Route

@@ -8,7 +8,7 @@ import {
 
 import { LogOut, X } from "lucide-react";
 import { pageRoutes } from "../routes/pageRoutes";
-
+import Swal from "sweetalert2";
 const navigation = [
   {
     name: "Allowed Users",
@@ -21,7 +21,7 @@ const navigation = [
     icon: ClockIcon,
   },
   {
-    name: "Create Email",
+    name: "Send Email",
     href: pageRoutes?.mail,
     icon: EnvelopeIcon,
   },
@@ -35,8 +35,40 @@ export default function Sidebar({ collapsed, mobileOpen, setMobileOpen }) {
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("access-token");
-    window.location.reload();
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out of the Admin Panel.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Logout",
+      cancelButtonText: "Cancel",
+      customClass: {
+        popup: "rounded-xl w-[450px] min-h-[180px] p-6",
+        actions: "flex gap-3 justify-center",
+        confirmButton:
+          "flex items-center gap-2 px-4 py-2 bg-[#22c55e] hover:bg-[#16a34a] text-white rounded-lg transition disabled:opacity-50",
+        cancelButton:
+          "flex items-center gap-2 px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg transition disabled:opacity-50",
+      },
+      buttonsStyling: false,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem("access-token");
+
+        Swal.fire({
+          icon: "success",
+          title: "Logged out!",
+          text: "You have been successfully logged out.",
+          timer: 1500,
+          showConfirmButton: false,
+          customClass: {
+            popup: "rounded-xl w-[450px] p-6",
+          },
+        }).then(() => {
+          window.location.reload();
+        });
+      }
+    });
   };
 
   return (

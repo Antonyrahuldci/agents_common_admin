@@ -3,7 +3,13 @@ import { useNavigate } from "react-router-dom";
 import "../css/style.css";
 import apiFunctions from "../api/apiFunctions";
 import { Editor } from "@tinymce/tinymce-react";
-import { Chip, Snackbar, Alert as MuiAlert } from "@mui/material";
+import {
+  Chip,
+  Snackbar,
+  Alert as MuiAlert,
+  Autocomplete,
+  TextField,
+} from "@mui/material";
 import { Send } from "lucide-react";
 
 // Alert wrapper
@@ -37,7 +43,7 @@ const SendMail = () => {
     setSnackbarOpen(false);
   };
 
-  // ✅ Fetch users (only for bulk allowed users)
+  // ✅ Fetch users (only for bulk OR individual)
   const getUsersData = () => {
     const apiCall =
       userType === "allowed"
@@ -64,46 +70,28 @@ const SendMail = () => {
 
   // ✅ Fetch users whenever mode or userType changes
   useEffect(() => {
-    if (mode === "bulk") {
-      getUsersData();
-    }
+    getUsersData();
   }, [mode, userType]);
 
-  // const handleEmailKeyDown = (e) => {
-  //   if (e.key === "Enter") {
-  //     e.preventDefault();
-  //     const trimmedEmail = emailInput.trim();
-  //     if (trimmedEmail && !emails.includes(trimmedEmail)) {
-  //       setEmails([...emails, trimmedEmail]);
-  //       setEmailInput("");
-  //     }
-  //   }
-  // };
+  const handleAddEmail = (newEmail) => {
+    if (!newEmail) return;
 
-  const handleEmailKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const trimmedEmail = emailInput.trim();
+    const trimmedEmail = newEmail.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      // ✅ Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!trimmedEmail) return; // empty input
-      if (!emailRegex.test(trimmedEmail)) {
-        showSnackbar("Please enter a valid email address.", "warning");
-        return;
-      }
-
-      // ✅ Check for duplicate emails
-      if (emails.includes(trimmedEmail)) {
-        showSnackbar("This email is already added.", "info");
-        return;
-      }
-
-      // ✅ Add email
-      setEmails([...emails, trimmedEmail]);
-      setEmailInput("");
-      showSnackbar("Email added successfully!", "success");
+    if (!emailRegex.test(trimmedEmail)) {
+      showSnackbar("Please enter a valid email address.", "warning");
+      return;
     }
+
+    if (emails.includes(trimmedEmail)) {
+      showSnackbar("This email is already added.", "info");
+      return;
+    }
+
+    setEmails([...emails, trimmedEmail]);
+    setEmailInput("");
+    showSnackbar("Email added successfully!", "success");
   };
 
   const handleDeleteEmail = (emailToDelete) => {
@@ -160,11 +148,13 @@ const SendMail = () => {
         <div className="mail_form p-4 bg-white dark:bg-black shadow rounded-lg border border-gray-300 dark:border-gray-700">
           <form onSubmit={handleSubmit}>
             <p className="mb-4 text-center text-xl font-semibold text-gray-900 dark:text-white">
-              Create Email
+              Send Email
             </p>
+
+            {/* --- User Type and Mode --- */}
             <div className="form-group mt-3 flex flex-wrap gap-6 items-center">
-              {/* User Type (Allowed / Waitlist) */}
-              <div className="form-group mt-3">
+              {/* User Type */}
+              <div>
                 <label className="text-gray-700 dark:text-gray-300">
                   User Type
                 </label>
@@ -200,8 +190,8 @@ const SendMail = () => {
                 </div>
               </div>
 
-              {/* Send Mode (Bulk / Individual) */}
-              <div className="form-group mt-3">
+              {/* Send Mode */}
+              <div>
                 <label className="text-gray-700 dark:text-gray-300">
                   Send Mode
                 </label>
@@ -237,7 +227,8 @@ const SendMail = () => {
                 </div>
               </div>
             </div>
-            {/* Bulk Mode info */}
+
+            {/* Bulk info */}
             {mode === "bulk" && (
               <div className="mt-3 text-gray-700 dark:text-gray-300">
                 <strong>
@@ -246,21 +237,79 @@ const SendMail = () => {
                 {users.length}
               </div>
             )}
-            {/* Emails input (Individual mode) */}
+
+            {/* Individual email selection with autocomplete */}
             {mode === "individual" && (
               <div className="form-group mt-3">
                 <label className="text-gray-700 dark:text-gray-300">
                   Email Addresses
+                  <span
+                    style={{ color: "red", fontWeight: 600 }}
+                    className="mb-0 ms-2"
+                  >
+                    (Type email and press Enter)
+                  </span>
                 </label>
-                <input
-                  type="text"
-                  className="form-control mt-1 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded"
-                  placeholder="Type email and press Enter"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
-                  onKeyDown={handleEmailKeyDown}
-                  disabled={loading}
+                <Autocomplete
+                  freeSolo
+                  // options={users.map((u) => u.email)}
+                  options={[...users.map((u) => u.email)].sort((a, b) =>
+                    a.localeCompare(b)
+                  )}
+                  value={null}
+                  inputValue={emailInput}
+                  onInputChange={(event, newInputValue) =>
+                    setEmailInput(newInputValue)
+                  }
+                  onChange={(event, newValue) => {
+                    if (newValue) {
+                      handleAddEmail(newValue);
+                      setEmailInput("");
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Type email and press Enter"
+                      variant="outlined"
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddEmail(emailInput);
+                          setEmailInput("");
+                        }
+                      }}
+                      disabled={loading}
+                      fullWidth
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          height: "40px",
+                          borderRadius: "4px",
+                          "& fieldset": {
+                            borderColor: "#969696",
+                          },
+                          "&:hover fieldset": {
+                            borderColor: "#969696",
+                          },
+                          "&.Mui-focused fieldset": {
+                            borderColor: "#969696",
+                          },
+                        },
+                        input: {
+                          padding: "10px",
+                          fontSize: "16px", // Match Subject field font size
+                          fontWeight: 400, // Match Subject field font weight
+                          fontFamily: "Arial, sans-serif", // Match Subject field font family
+                          color: "#000000",
+                        },
+                      }}
+                    />
+                  )}
                 />
+
+                {/* Added emails as chips */}
                 <div className="mt-2">
                   {emails.map((email, idx) => (
                     <Chip
@@ -281,16 +330,12 @@ const SendMail = () => {
 
             {/* Subject */}
             <div className="form-group mt-3">
-              <label
-                htmlFor="subject"
-                className="text-gray-700 dark:text-gray-300"
-              >
+              <label className="text-gray-700 dark:text-gray-300">
                 Subject
               </label>
               <input
                 type="text"
                 className="form-control mt-1 bg-gray-100 dark:bg-white-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 rounded"
-                id="subject"
                 placeholder="Subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
@@ -333,11 +378,7 @@ const SendMail = () => {
                     setEmails([]);
                     setEmailInput("");
                   }}
-                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold 
-                 text-white bg-[#4b5563] 
-                 hover:bg-[#374151] 
-                 focus:outline-none focus:ring-2 focus:ring-[#4b5563] 
-                 disabled:opacity-50 transition shadow-md"
+                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-[#4b5563] hover:bg-[#374151] focus:outline-none focus:ring-2 focus:ring-[#4b5563] disabled:opacity-50 transition shadow-md"
                 >
                   Clear
                 </button>
@@ -346,11 +387,7 @@ const SendMail = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold 
-                 text-white bg-[#16a34a] 
-                 hover:bg-[#15803d] 
-                 focus:outline-none focus:ring-2 focus:ring-[#16a34a] 
-                 disabled:opacity-50 transition shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-2 px-4 rounded-lg text-sm font-semibold text-white bg-[#16a34a] hover:bg-[#15803d] focus:outline-none focus:ring-2 focus:ring-[#16a34a] disabled:opacity-50 transition shadow-md flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     "Sending..."
